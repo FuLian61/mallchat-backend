@@ -6,6 +6,7 @@ import com.fulian.mallchat.common.common.utils.JwtUtils;
 import com.fulian.mallchat.common.common.utils.RedisUtils;
 import com.fulian.mallchat.common.user.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -20,14 +21,13 @@ public class LoginServiceImpl implements LoginService {
     @Autowired
     private JwtUtils jwtUtils;
 
-    ThreadPoolExecutor executor;
-
     /**
      * 刷新token有效期
      *
      * @param token
      */
     @Override
+    @Async
     public void renewalTokenIfNecessary(String token) {
 
         Long uid = getValidUid(token);
