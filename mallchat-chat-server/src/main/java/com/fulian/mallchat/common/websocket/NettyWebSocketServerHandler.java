@@ -1,8 +1,11 @@
 package com.fulian.mallchat.common.websocket;
 
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.fulian.mallchat.common.websocket.domain.enums.WSReqTypeEnum;
 import com.fulian.mallchat.common.websocket.domain.vo.req.WSBaseReq;
+import com.fulian.mallchat.common.websocket.service.WebsocketService;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -15,6 +18,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ChannelHandler.Sharable
 public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+
+    private WebsocketService websocketService;
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        websocketService = SpringUtil.getBean(WebsocketService.class);
+        websocketService.connect(ctx.channel());
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        useroffline(ctx.channel());
+    }
 
     // 握手事件
     @Override
@@ -31,6 +47,15 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
         }
     }
 
+    /**
+     * 用户下线统一处理
+     * @param channel
+     */
+    private void useroffline(Channel channel) {
+        websocketService.remove(channel);
+        channel.close();
+    }
+
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, TextWebSocketFrame textWebSocketFrame) throws Exception {
         String text = textWebSocketFrame.text();
@@ -41,8 +66,7 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
             case HEARTBEAT:
                 break;
             case LOGIN:
-                System.out.println("请求二维码");
-                channelHandlerContext.channel().writeAndFlush(new TextWebSocketFrame("123"));
+                websocketService.handleLoginReq(channelHandlerContext.channel());
         }
         System.out.println(text);
     }
