@@ -2,7 +2,7 @@ package com.fulian.mallchat.common.common.constant;
 
 public class RedisKey {
 
-    public static final String BASE_KEY = "mallchat:chat";
+    public static final String BASE_KEY = "mallchat:chat:";
 
     /**
      * 用户 token 的 key

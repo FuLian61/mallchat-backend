@@ -27,4 +27,6 @@ public interface WebsocketService {
      * @param code
      */
     void waitAuthorize(Integer code);
+
+    void authorize(Channel channel,String token);
 }
