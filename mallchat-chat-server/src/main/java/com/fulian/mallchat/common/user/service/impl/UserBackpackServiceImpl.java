@@ -1,6 +1,7 @@
 package com.fulian.mallchat.common.user.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fulian.mallchat.common.common.domain.enums.YesOrNoEnum;
 import com.fulian.mallchat.common.user.domain.entity.UserBackpack;
 import com.fulian.mallchat.common.user.mapper.UserBackpackMapper;
 import com.fulian.mallchat.common.user.service.UserBackpackService;
@@ -15,6 +16,15 @@ import org.springframework.stereotype.Service;
 public class UserBackpackServiceImpl extends ServiceImpl<UserBackpackMapper, UserBackpack>
     implements UserBackpackService {
 
+
+    @Override
+    public Integer getCountByValidItemId(Long uid, Long itemId) {
+        return lambdaQuery()
+                .eq(UserBackpack::getUid, uid)
+                .eq(UserBackpack::getItemId, itemId)
+                .eq(UserBackpack::getStatus, YesOrNoEnum.NO.getStatus())
+                .count();
+    }
 }
 
 

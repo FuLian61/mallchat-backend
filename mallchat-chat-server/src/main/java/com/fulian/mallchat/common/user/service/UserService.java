@@ -3,6 +3,7 @@ package com.fulian.mallchat.common.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fulian.mallchat.common.user.domain.entity.User;
+import com.fulian.mallchat.common.user.domain.vo.resp.UserInfoResp;
 
 /**
 * @author fulian
@@ -14,4 +15,10 @@ public interface UserService extends IService<User> {
     User getByOpenId(String openId);
 
     Long register(User user);
+
+    UserInfoResp getUserInfo(Long uid);
+
+    void modifyName(Long uid, String name);
+
+    User getByName(String name);
 }

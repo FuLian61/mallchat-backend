@@ -40,6 +40,7 @@ public class TmpTest {
 //        RedisUtils.set("name","卷心菜");
 //        System.out.println(RedisUtils.get("name"));
         String s = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjExMDAxLCJjcmVhdGVUaW1lIjoxNzMwNjQyOTcwfQ.fVimEWz4MDmR4yz4Z4owh9dJL8IKQSHlL0fG7uhJwic";
+        System.out.println(loginService.login(11001L));
         System.out.println(loginService.getValidUid(s));
     }
 

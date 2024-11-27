@@ -1,6 +1,8 @@
 package com.fulian.mallchat.common.user.service.adapter;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.fulian.mallchat.common.user.domain.entity.User;
+import com.fulian.mallchat.common.user.domain.vo.resp.UserInfoResp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,5 +22,13 @@ public class UserAdapter {
         user.setName(userInfo.getNickname());
         user.setAvatar(userInfo.getHeadImgUrl());
         return user;
+    }
+
+    public static UserInfoResp buildUserInfo(User user, Integer modifyNameCount) {
+        UserInfoResp vo = new UserInfoResp();
+        BeanUtil.copyProperties(user, vo);
+        vo.setId(user.getId());
+        vo.setModifyNameChance(modifyNameCount);
+        return vo;
     }
 }

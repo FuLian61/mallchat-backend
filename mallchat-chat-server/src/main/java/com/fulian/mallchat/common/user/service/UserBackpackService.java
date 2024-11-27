@@ -10,4 +10,5 @@ import com.fulian.mallchat.common.user.domain.entity.UserBackpack;
 */
 public interface UserBackpackService extends IService<UserBackpack> {
 
+    Integer getCountByValidItemId(Long uid, Long itemId);
 }
