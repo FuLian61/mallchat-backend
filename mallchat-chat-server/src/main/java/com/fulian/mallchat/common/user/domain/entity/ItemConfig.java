@@ -33,6 +33,7 @@ public class ItemConfig implements Serializable {
     /**
      * 物品功能描述
      */
+    @TableField("`describe`")
     private String describe;
 
     /**

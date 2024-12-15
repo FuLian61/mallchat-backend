@@ -6,6 +6,9 @@ import com.fulian.mallchat.common.user.mapper.ItemConfigMapper;
 import com.fulian.mallchat.common.user.service.ItemConfigService;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
 * @author fulian
 * @description 针对表【item_config(功能物品配置表)】的数据库操作Service实现
@@ -15,6 +18,12 @@ import org.springframework.stereotype.Service;
 public class ItemConfigServiceImpl extends ServiceImpl<ItemConfigMapper, ItemConfig>
     implements ItemConfigService {
 
+    @Override
+    public List<ItemConfig> getByType(Integer itemType) {
+        return lambdaQuery().
+                eq(ItemConfig::getType, itemType)
+                .list();
+    }
 }
 
 
