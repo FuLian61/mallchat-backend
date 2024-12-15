@@ -1,10 +1,9 @@
 package com.fulian.mallchat.common.user.service.impl;
 
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.fulian.mallchat.common.common.annotation.RedissonLock;
-import com.fulian.mallchat.common.common.exception.BusinessException;
+import com.fulian.mallchat.common.common.event.UserRegisterEvent;
 import com.fulian.mallchat.common.common.utils.AssertUtil;
 import com.fulian.mallchat.common.user.domain.entity.ItemConfig;
 import com.fulian.mallchat.common.user.domain.entity.User;
@@ -21,13 +20,11 @@ import com.fulian.mallchat.common.user.service.UserService;
 import com.fulian.mallchat.common.user.service.adapter.UserAdapter;
 import com.fulian.mallchat.common.user.service.cache.ItemCache;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -48,6 +45,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Autowired
     private ItemConfigService ItemConfigService;
 
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
     @Override
     public User getByOpenId(String openId) {
         return lambdaQuery().eq(User::getOpenId,openId).one();
@@ -57,7 +57,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Transactional
     public Long register(User user) {
         boolean save = this.save(user);
-        // todo 用户注册的事件
+        // 用户注册的事件
+        applicationEventPublisher.publishEvent(new UserRegisterEvent(this,user));
         return save?user.getId():null;
     }
 

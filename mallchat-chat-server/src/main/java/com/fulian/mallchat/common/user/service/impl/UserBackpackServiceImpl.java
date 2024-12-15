@@ -1,14 +1,15 @@
 package com.fulian.mallchat.common.user.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fulian.mallchat.common.common.annotation.RedissonLock;
 import com.fulian.mallchat.common.common.domain.enums.YesOrNoEnum;
 import com.fulian.mallchat.common.common.service.LockService;
-import com.fulian.mallchat.common.common.utils.AssertUtil;
 import com.fulian.mallchat.common.user.domain.entity.UserBackpack;
 import com.fulian.mallchat.common.user.domain.enums.IdempotentEnum;
 import com.fulian.mallchat.common.user.mapper.UserBackpackMapper;
 import com.fulian.mallchat.common.user.service.UserBackpackService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 
@@ -24,10 +25,12 @@ import java.util.Objects;
 public class UserBackpackServiceImpl extends ServiceImpl<UserBackpackMapper, UserBackpack>
     implements UserBackpackService {
 
-
     @Autowired
     private LockService lockService;
 
+    @Autowired
+    @Lazy
+    private UserBackpackServiceImpl userBackpackServiceImpl;
 
     @Override
     public Integer getCountByValidItemId(Long uid, Long itemId) {
@@ -70,23 +73,26 @@ public class UserBackpackServiceImpl extends ServiceImpl<UserBackpackMapper, Use
     @Override
     public void acquireItem(Long uid, Long itemId, IdempotentEnum idempotentEnum, String businessId) {
         String idempotent = getIdempotent(itemId,idempotentEnum,businessId);
-        lockService.executeWithLock("acquireItem" + idempotent,()->{
-            UserBackpack userBackpack = this.getByIdempotent(idempotent);
-            if (Objects.nonNull(userBackpack)) {
-                return ;
-            }
-            // 业务检查
-            // 发放物品
-            UserBackpack insert = UserBackpack.builder()
-                    .uid(uid)
-                    .itemId(itemId)
-                    .status(YesOrNoEnum.NO.getStatus())
-                    .idempotent(idempotent)
-                    .build();
+        userBackpackServiceImpl.doAcquireItem(uid,itemId,idempotent);
 
-            this.save(insert);
-        });
+    }
 
+    @RedissonLock(key = "#idempotent",waitTime = 5000)
+    public void doAcquireItem(Long uid, Long itemId, String idempotent) {
+        UserBackpack userBackpack = this.getByIdempotent(idempotent);
+        if (Objects.nonNull(userBackpack)) {
+            return ;
+        }
+        // 业务检查
+        // 发放物品
+        UserBackpack insert = UserBackpack.builder()
+                .uid(uid)
+                .itemId(itemId)
+                .status(YesOrNoEnum.NO.getStatus())
+                .idempotent(idempotent)
+                .build();
+
+        this.save(insert);
     }
 
     private String getIdempotent(Long itemId, IdempotentEnum idempotentEnum, String businessId) {
