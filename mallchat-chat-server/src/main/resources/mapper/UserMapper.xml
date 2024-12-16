@@ -12,7 +12,7 @@
             <result property="openId" column="open_id" jdbcType="CHAR"/>
             <result property="activeStatus" column="active_status" jdbcType="INTEGER"/>
             <result property="lastOptTime" column="last_opt_time" jdbcType="TIMESTAMP"/>
-            <result property="ipInfo" column="ip_info" jdbcType="OTHER"/>
+            <result property="ipInfo" column="ip_info" jdbcType="VARCHAR" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
             <result property="itemId" column="item_id" jdbcType="BIGINT"/>
             <result property="status" column="status" jdbcType="INTEGER"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>

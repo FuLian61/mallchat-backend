@@ -2,13 +2,14 @@ package com.fulian.mallchat.common.websocket.service.impl;
 
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
+import com.fulian.mallchat.common.common.event.UserOnlineEvent;
+import com.fulian.mallchat.common.user.domain.entity.IpInfo;
 import com.fulian.mallchat.common.user.domain.entity.User;
 import com.fulian.mallchat.common.user.service.LoginService;
 import com.fulian.mallchat.common.user.service.UserService;
+import com.fulian.mallchat.common.websocket.NettyUtil;
 import com.fulian.mallchat.common.websocket.domain.dto.WSChannelExtraDto;
-import com.fulian.mallchat.common.websocket.domain.enums.WSRespTypeEnum;
 import com.fulian.mallchat.common.websocket.domain.vo.resp.WSBaseResp;
-import com.fulian.mallchat.common.websocket.domain.vo.resp.WSLoginUrl;
 import com.fulian.mallchat.common.websocket.service.WebsocketService;
 import com.fulian.mallchat.common.websocket.service.adapter.WebSocketAdapter;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -19,10 +20,12 @@ import lombok.SneakyThrows;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,6 +44,10 @@ public class WebsocketServiceImpl implements WebsocketService {
 
     @Autowired
     private LoginService loginService;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
     /**
      * 管理所有在线用户的连接（登录态/游客）
      */
@@ -129,10 +136,12 @@ public class WebsocketServiceImpl implements WebsocketService {
         // 保存 channel 对应的 uid
         WSChannelExtraDto wsChannelExtraDto = ONLINE_WS_MAP.get(channel);
         wsChannelExtraDto.setUid(user.getId());
-        // todo 用户上线成功的事件
         // 推送成功消息
         sendMsg(channel,WebSocketAdapter.buildResp(user,token));
-
+        // 用户上线成功的事件
+        user.setLastOptTime(new Date());
+        user.refreshIp(NettyUtil.getAttr(channel,NettyUtil.IP));
+        applicationEventPublisher.publishEvent(new UserOnlineEvent(this,user));
     }
 
 
